@@ -1,0 +1,757 @@
+openapi: 3.0.3
+info:
+  title: Full-Stack Coding Challenges API
+  description: |
+    A comprehensive API for demonstrating modern full-stack development techniques including:
+    - High-performance data processing with 50,000+ records
+    - Tree/hierarchy rendering with lazy loading
+    - Real-time dashboard with WebSocket connectivity
+
+    ## Performance Targets
+    - User queries with 50,000+ records: < 500ms
+    - WebSocket updates: 10-50 updates/second
+    - Search response: < 250ms debounced
+    - Pagination: < 300ms page changes
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@example.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:3001
+    description: Development server
+  - url: https://api.example.com
+    description: Production server
+
+paths:
+  /health:
+    get:
+      summary: Health check
+      description: Returns server status and metrics
+      tags:
+        - System
+      responses:
+        '200':
+          description: Server is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      status:
+                        type: string
+                        example: healthy
+                      timestamp:
+                        type: string
+                        format: date-time
+                      uptime:
+                        type: number
+                        example: 3600
+                      memory:
+                        type: object
+                        properties:
+                          rss:
+                            type: number
+                          heapTotal:
+                            type: number
+                          heapUsed:
+                            type: number
+                      websocket:
+                        type: object
+                        properties:
+                          connectedClients:
+                            type: number
+                          subscribedSymbols:
+                            type: array
+                            items:
+                              type: string
+
+  /api/users:
+    get:
+      summary: Get users with pagination and filtering
+      description: Retrieve paginated list of users with search, sorting, and filtering capabilities
+      tags:
+        - Users
+      parameters:
+        - name: page
+          in: query
+          description: Page number (1-based)
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: pageSize
+          in: query
+          description: Number of items per page
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 200
+            default: 50
+        - name: search
+          in: query
+          description: Search term for name or email
+          required: false
+          schema:
+            type: string
+            maxLength: 100
+        - name: sortBy
+          in: query
+          description: Field to sort by
+          required: false
+          schema:
+            type: string
+            enum: [name, email, createdAt, orderTotal]
+            default: name
+        - name: sortDir
+          in: query
+          description: Sort direction
+          required: false
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: asc
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/PaginatedUserResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/users/{id}:
+    get:
+      summary: Get user by ID
+      description: Retrieve a specific user by their ID
+      tags:
+        - Users
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: User ID
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: User found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/User'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/users/{id}/orders:
+    get:
+      summary: Get user orders
+      description: Retrieve orders for a specific user with pagination
+      tags:
+        - Users
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: User ID
+          schema:
+            type: integer
+        - name: page
+          in: query
+          description: Page number
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: pageSize
+          in: query
+          description: Items per page
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 200
+            default: 50
+      responses:
+        '200':
+          description: User orders retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/PaginatedOrderResponse'
+
+  /api/users/stats:
+    get:
+      summary: Get user statistics
+      description: Retrieve aggregated user statistics
+      tags:
+        - Users
+      responses:
+        '200':
+          description: Statistics retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/UserStats'
+
+  /api/nodes/root:
+    get:
+      summary: Get root nodes
+      description: Retrieve top-level nodes in the hierarchy
+      tags:
+        - Nodes
+      responses:
+        '200':
+          description: Root nodes retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Node'
+
+  /api/nodes/{id}/children:
+    get:
+      summary: Get node children
+      description: Retrieve direct children of a specific node
+      tags:
+        - Nodes
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Node ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Node children retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Node'
+
+  /api/search:
+    get:
+      summary: Search nodes
+      description: Search nodes with path information for auto-expansion
+      tags:
+        - Nodes
+      parameters:
+        - name: q
+          in: query
+          required: true
+          description: Search query
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 100
+        - name: limit
+          in: query
+          required: false
+          description: Maximum number of results
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 1000
+            default: 100
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/SearchResult'
+
+  /api/quotes/snapshot:
+    get:
+      summary: Get quote snapshot
+      description: Retrieve current quotes for multiple symbols
+      tags:
+        - Quotes
+      parameters:
+        - name: symbols
+          in: query
+          required: true
+          description: Comma-separated list of symbols
+          schema:
+            type: string
+            example: "AAPL,MSFT,GOOG"
+      responses:
+        '200':
+          description: Quote snapshot retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/QuoteSnapshot'
+
+  /api/quotes/{symbol}:
+    get:
+      summary: Get quote by symbol
+      description: Retrieve quote for a specific symbol
+      tags:
+        - Quotes
+      parameters:
+        - name: symbol
+          in: path
+          required: true
+          description: Stock symbol
+          schema:
+            type: string
+            example: "AAPL"
+      responses:
+        '200':
+          description: Quote retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/Quote'
+
+  /dev/seed:
+    post:
+      summary: Seed test data
+      description: Generate test data for development and testing
+      tags:
+        - Development
+      parameters:
+        - name: users
+          in: query
+          description: Number of users to create
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100000
+            default: 50000
+        - name: orders
+          in: query
+          description: Number of orders to create
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 1000000
+            default: 500000
+        - name: products
+          in: query
+          description: Number of products to create
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50000
+            default: 10000
+        - name: breadth
+          in: query
+          description: Tree breadth for nodes
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 20
+        - name: depth
+          in: query
+          description: Tree depth for nodes
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 15
+            default: 10
+        - name: symbols
+          in: query
+          description: Quote symbols
+          schema:
+            type: string
+            default: "AAPL,MSFT,GOOG,AMZN,TSLA,META,NVDA,NFLX,AMD,INTC"
+      responses:
+        '200':
+          description: Data seeded successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      users:
+                        type: integer
+                      products:
+                        type: integer
+                      orders:
+                        type: integer
+                      nodes:
+                        type: integer
+                      quotes:
+                        type: integer
+                      duration:
+                        type: string
+                      message:
+                        type: string
+
+    delete:
+      summary: Clear all data
+      description: Remove all seeded data
+      tags:
+        - Development
+      responses:
+        '200':
+          description: Data cleared successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      message:
+                        type: string
+
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "John Doe"
+        email:
+          type: string
+          format: email
+          example: "john@example.com"
+        createdAt:
+          type: string
+          format: date-time
+          example: "2023-01-01T00:00:00Z"
+      required:
+        - id
+        - name
+        - email
+        - createdAt
+
+    UserRow:
+      allOf:
+        - $ref: '#/components/schemas/User'
+        - type: object
+          properties:
+            orderCount:
+              type: integer
+              example: 5
+            orderTotal:
+              type: number
+              format: float
+              example: 1250.50
+          required:
+            - orderCount
+            - orderTotal
+
+    PaginatedUserResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserRow'
+        total:
+          type: integer
+          example: 1000
+        page:
+          type: integer
+          example: 1
+        pageSize:
+          type: integer
+          example: 50
+      required:
+        - items
+        - total
+        - page
+        - pageSize
+
+    Order:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        userId:
+          type: integer
+          example: 1
+        productId:
+          type: integer
+          example: 1
+        amount:
+          type: number
+          format: float
+          example: 150.25
+        createdAt:
+          type: string
+          format: date-time
+          example: "2023-01-01T00:00:00Z"
+      required:
+        - id
+        - userId
+        - productId
+        - amount
+        - createdAt
+
+    PaginatedOrderResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            allOf:
+              - $ref: '#/components/schemas/Order'
+              - type: object
+                properties:
+                  product:
+                    type: object
+                    nullable: true
+        total:
+          type: integer
+        page:
+          type: integer
+        pageSize:
+          type: integer
+
+    UserStats:
+      type: object
+      properties:
+        totalUsers:
+          type: integer
+          example: 50000
+        totalOrders:
+          type: integer
+          example: 500000
+        totalRevenue:
+          type: number
+          format: float
+          example: 1250000.50
+        averageOrderValue:
+          type: number
+          format: float
+          example: 250.00
+
+    Node:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "node-123"
+        parentId:
+          type: string
+          nullable: true
+          example: "parent-456"
+        name:
+          type: string
+          example: "Engineering Team"
+        hasChildren:
+          type: boolean
+          example: true
+      required:
+        - id
+        - parentId
+        - name
+        - hasChildren
+
+    SearchResult:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "node-123"
+        name:
+          type: string
+          example: "Engineering Team"
+        path:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              name:
+                type: string
+          example:
+            - id: "root"
+              name: "Company"
+            - id: "dept-1"
+              name: "Engineering"
+            - id: "node-123"
+              name: "Engineering Team"
+      required:
+        - id
+        - name
+        - path
+
+    Quote:
+      type: object
+      properties:
+        symbol:
+          type: string
+          example: "AAPL"
+        price:
+          type: number
+          format: float
+          example: 150.25
+        ts:
+          type: string
+          format: date-time
+          example: "2023-01-01T12:00:00Z"
+      required:
+        - symbol
+        - price
+        - ts
+
+    QuoteSnapshot:
+      type: object
+      additionalProperties:
+        $ref: '#/components/schemas/Quote'
+      example:
+        AAPL:
+          symbol: "AAPL"
+          price: 150.25
+          ts: "2023-01-01T12:00:00Z"
+        MSFT:
+          symbol: "MSFT"
+          price: 300.50
+          ts: "2023-01-01T12:00:00Z"
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: string
+          example: "Error message"
+        message:
+          type: string
+          example: "Additional error details"
+      required:
+        - success
+        - error
+
+  securitySchemes:
+    ApiKey:
+      type: apiKey
+      in: header
+      name: X-API-Key
+
+security:
+  - ApiKey: []
+
+tags:
+  - name: System
+    description: System health and status endpoints
+  - name: Users
+    description: User management and data processing
+  - name: Nodes
+    description: Tree/hierarchy management
+  - name: Quotes
+    description: Real-time quote data
+  - name: Development
+    description: Development and testing utilities
+

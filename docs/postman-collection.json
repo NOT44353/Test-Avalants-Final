@@ -1,0 +1,334 @@
+{
+  "info": {
+    "name": "Full-Stack Coding Challenges API",
+    "description": "API collection for the full-stack coding challenges project",
+    "version": "1.0.0",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3001",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/health",
+          "host": ["{{baseUrl}}"],
+          "path": ["health"]
+        }
+      }
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Get Users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/users?page=1&pageSize=50&search=&sortBy=name&sortDir=asc",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "50"
+                },
+                {
+                  "key": "search",
+                  "value": ""
+                },
+                {
+                  "key": "sortBy",
+                  "value": "name"
+                },
+                {
+                  "key": "sortDir",
+                  "value": "asc"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get User by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "1"]
+            }
+          }
+        },
+        {
+          "name": "Get User Orders",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/1/orders?page=1&pageSize=50",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "1", "orders"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "50"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get User Stats",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/stats",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "stats"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Nodes",
+      "item": [
+        {
+          "name": "Get Root Nodes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/nodes/root",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "nodes", "root"]
+            }
+          }
+        },
+        {
+          "name": "Get Node Children",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/nodes/1/children",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "nodes", "1", "children"]
+            }
+          }
+        },
+        {
+          "name": "Get Node by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/nodes/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "nodes", "1"]
+            }
+          }
+        },
+        {
+          "name": "Search Nodes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/search?q=engineering&limit=100",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "search"],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "engineering"
+                },
+                {
+                  "key": "limit",
+                  "value": "100"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Node Breadcrumb",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/nodes/1/breadcrumb",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "nodes", "1", "breadcrumb"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Quotes",
+      "item": [
+        {
+          "name": "Get Quote Snapshot",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/quotes/snapshot?symbols=AAPL,MSFT,GOOG",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "quotes", "snapshot"],
+              "query": [
+                {
+                  "key": "symbols",
+                  "value": "AAPL,MSFT,GOOG"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Quote by Symbol",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/quotes/AAPL",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "quotes", "AAPL"]
+            }
+          }
+        },
+        {
+          "name": "Get All Quotes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/quotes",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "quotes"]
+            }
+          }
+        },
+        {
+          "name": "Get Quote Stats",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/quotes/stats",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "quotes", "stats"]
+            }
+          }
+        },
+        {
+          "name": "Get Top Movers",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/quotes/movers?limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "quotes", "movers"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Development",
+      "item": [
+        {
+          "name": "Seed Data",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/dev/seed?users=1000&orders=5000&products=100&breadth=5&depth=3&symbols=AAPL,MSFT,GOOG",
+              "host": ["{{baseUrl}}"],
+              "path": ["dev", "seed"],
+              "query": [
+                {
+                  "key": "users",
+                  "value": "1000"
+                },
+                {
+                  "key": "orders",
+                  "value": "5000"
+                },
+                {
+                  "key": "products",
+                  "value": "100"
+                },
+                {
+                  "key": "breadth",
+                  "value": "5"
+                },
+                {
+                  "key": "depth",
+                  "value": "3"
+                },
+                {
+                  "key": "symbols",
+                  "value": "AAPL,MSFT,GOOG"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Clear Data",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/dev/seed",
+              "host": ["{{baseUrl}}"],
+              "path": ["dev", "seed"]
+            }
+          }
+        },
+        {
+          "name": "Get Seed Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/dev/seed/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["dev", "seed", "status"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
+

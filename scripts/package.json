@@ -1,0 +1,15 @@
+{
+  "name": "performance-tests",
+  "version": "1.0.0",
+  "description": "Performance testing scripts for full-stack coding challenges",
+  "main": "performance-test.js",
+  "scripts": {
+    "test": "node performance-test.js",
+    "test:load": "CONCURRENT_REQUESTS=50 TOTAL_REQUESTS=500 node performance-test.js",
+    "test:stress": "CONCURRENT_REQUESTS=100 TOTAL_REQUESTS=1000 node performance-test.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
+
